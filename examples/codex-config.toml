@@ -1,0 +1,3 @@
+# ~/.codex/config.toml
+[mcp_servers.dialmcp]
+url = "https://mcp.dialmcp.com/mcp"

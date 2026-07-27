@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dialmcp": {
+      "command": "npx",
+      "args": ["-y", "dialmcp-connector"]
+    }
+  }
+}

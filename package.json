@@ -1,0 +1,54 @@
+{
+  "name": "dialmcp-connector",
+  "version": "0.1.0",
+  "description": "Open-source connector for DialMCP — the hosted MCP server that lets AI agents place real phone calls from your own verified number.",
+  "mcpName": "com.dialmcp/dialmcp",
+  "type": "module",
+  "bin": {
+    "dialmcp-connector": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "validate:manifest": "node scripts/validate-manifest.mjs",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "remote-mcp",
+    "ai-agents",
+    "phone-calls",
+    "voice-ai",
+    "telephony",
+    "call-automation",
+    "dialmcp"
+  ],
+  "homepage": "https://dialmcp.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SkillfulAgents/dialmcp-connector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SkillfulAgents/dialmcp-connector/issues"
+  },
+  "author": "Datawizz Inc.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "mcp-remote": "^0.1.38"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
