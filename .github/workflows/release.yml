@@ -17,6 +17,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Gates MCP_REGISTRY_PRIVATE_KEY behind a v* tag policy — that key controls the whole
+    # com.dialmcp namespace, not just this package.
+    environment: release
     steps:
       - uses: actions/checkout@v4
 
@@ -61,3 +64,32 @@ jobs:
       - name: Dry run
         if: github.event_name == 'workflow_dispatch' && inputs.dry_run
         run: npm publish --dry-run --access public
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Validate server.json against the registry
+        run: ./mcp-publisher validate
+
+      # The registry verifies ownership by fetching mcpName from the freshly published npm
+      # version, so it 404s until npm propagates. Retry rather than fail the release.
+      - name: Wait for npm to propagate
+        if: github.event_name == 'release' || inputs.dry_run == false
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          for i in $(seq 1 10); do
+            if curl -sfo /dev/null "https://registry.npmjs.org/dialmcp-connector/$VERSION"; then
+              echo "npm has $VERSION"; exit 0
+            fi
+            echo "attempt $i: not visible yet, retrying in 15s"; sleep 15
+          done
+          echo "::error::dialmcp-connector@$VERSION never appeared on npm"; exit 1
+
+      - name: Publish to the MCP Registry
+        if: github.event_name == 'release' || inputs.dry_run == false
+        run: |
+          ./mcp-publisher login dns --domain dialmcp.com --private-key "$MCP_REGISTRY_PRIVATE_KEY"
+          ./mcp-publisher publish
+        env:
+          MCP_REGISTRY_PRIVATE_KEY: ${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}

@@ -14,6 +14,12 @@ if (manifest.description && manifest.description.length > 100) {
   problems.push(`server.json description is ${manifest.description.length} chars, max is 100`);
 }
 
+// A stale $schema only produces a warning at publish time, so it rots silently without this check.
+const SCHEMA_VERSION = "2025-12-11";
+if (!manifest.$schema?.includes(SCHEMA_VERSION)) {
+  problems.push(`server.json $schema is not ${SCHEMA_VERSION}: ${manifest.$schema}`);
+}
+
 if (manifest.version !== pkg.version) {
   problems.push(`version mismatch: server.json ${manifest.version} vs package.json ${pkg.version}`);
 }
