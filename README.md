@@ -161,22 +161,52 @@ Full detail: <https://dialmcp.com/safety.html>
 
 ## Releasing
 
-Publishing to npm is automated. To cut a release:
+Every release publishes to two places: **npm** (`dialmcp-connector`) and the
+[official MCP Registry](https://registry.modelcontextprotocol.io) (`com.dialmcp/dialmcp`). Both are
+automated by [`.github/workflows/release.yml`](.github/workflows/release.yml).
 
-1. Bump `version` in **both** `package.json` and `server.json` (CI fails if they disagree).
+### Cutting a release
+
+1. Bump `version` in **both** `package.json` and `server.json` — `npm run validate:manifest` fails if they
+   disagree, and CI runs it on every push.
 2. Merge to `main`.
-3. Publish a GitHub Release tagged `vX.Y.Z` — the tag must match `package.json` or the workflow stops.
+3. Run the Release workflow manually (**Actions → Release → Run workflow**, `dry_run` left checked) and let
+   it go green. This packs the tarball and validates `server.json` against the live registry schema without
+   publishing anything.
+4. Publish a GitHub Release tagged `vX.Y.Z`. The tag must match `package.json` or the workflow stops before
+   publishing.
 
-[`.github/workflows/release.yml`](.github/workflows/release.yml) then typechecks, builds, smoke-tests, and
-runs `npm publish --provenance`, so every release carries a signed link back to the commit and workflow
-that built it. It then publishes `server.json` to the
-[official MCP Registry](https://registry.modelcontextprotocol.io) as `com.dialmcp/dialmcp` in a second job,
-waiting for npm to propagate first because the registry verifies ownership by reading `mcpName` from the
-published package. That job runs in the `release` environment, whose signing key is restricted to `v*` tags.
-Use the workflow's `workflow_dispatch` trigger for a dry run — it stops after validating `server.json`.
+Step 3 is worth the two minutes: **registry versions are immutable and cannot be unpublished.** A bad
+version can only be superseded by a higher one or marked deprecated.
 
-Registry versions are **immutable and cannot be unpublished** — a bad version can only be superseded or
-marked deprecated, so let the dry run pass before tagging.
+### What the workflow does
+
+| Job | Runs on | Steps |
+|---|---|---|
+| `publish` | releases **and** manual dry runs | typecheck → validate manifest → build → smoke test → tag/version match → `npm publish --provenance` → `mcp-publisher validate` |
+| `registry` | releases only | wait for npm propagation → `mcp-publisher login dns` → `mcp-publisher publish` |
+
+`--provenance` attaches a signed attestation linking the tarball back to the commit and workflow run that
+built it, which is why the job needs `id-token: write`.
+
+The registry publish is a **separate job** for two reasons. It has to wait for npm: the registry proves
+ownership by fetching the freshly published version and reading its `mcpName` field, which 404s until npm
+propagates (the job retries for ~2.5 minutes). And it holds the signing key, which is scoped to the whole
+`com.dialmcp` namespace rather than this one package — so it lives in a protected environment. Keeping that
+environment off the `publish` job is deliberate: its branch policy only admits `v*` tags, and applying it
+job-wide would block manual dry runs from `main` outright.
+
+### One-time setup
+
+| What | Where | Why |
+|---|---|---|
+| `NPM_TOKEN` | repository secret | automation token with publish rights on `dialmcp-connector` |
+| `MCP_REGISTRY_PRIVATE_KEY` | secret on the `release` environment | Ed25519 key, base64; authenticates the registry publish |
+| `release` environment | deployment branch policy → tags → `v*` | keeps the namespace key off untagged runs |
+| `v=MCPv1; k=ed25519; p=<public key>` | TXT record on the **apex** of `dialmcp.com` | how the registry verifies domain ownership |
+
+The TXT record goes on the bare domain, SPF-style — a `_mcp.` selector is not read and fails with an opaque
+signature error. Signatures carry a ±15s timestamp window, so the runner's clock must be accurate.
 
 ## Contributing
 
