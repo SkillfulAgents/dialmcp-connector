@@ -170,9 +170,10 @@ Publishing to npm is automated. To cut a release:
 [`.github/workflows/release.yml`](.github/workflows/release.yml) then typechecks, builds, smoke-tests, and
 runs `npm publish --provenance`, so every release carries a signed link back to the commit and workflow
 that built it. It then publishes `server.json` to the
-[official MCP Registry](https://registry.modelcontextprotocol.io) as `com.dialmcp/dialmcp`, waiting for npm
-to propagate first because the registry verifies ownership by reading `mcpName` from the published package.
-Use the workflow's `workflow_dispatch` trigger for a dry run.
+[official MCP Registry](https://registry.modelcontextprotocol.io) as `com.dialmcp/dialmcp` in a second job,
+waiting for npm to propagate first because the registry verifies ownership by reading `mcpName` from the
+published package. That job runs in the `release` environment, whose signing key is restricted to `v*` tags.
+Use the workflow's `workflow_dispatch` trigger for a dry run — it stops after validating `server.json`.
 
 Registry versions are **immutable and cannot be unpublished** — a bad version can only be superseded or
 marked deprecated, so let the dry run pass before tagging.
