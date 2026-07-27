@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/wordmark.png" alt="DialMCP" width="360">
+  <img src="https://raw.githubusercontent.com/SkillfulAgents/dialmcp-connector/main/assets/wordmark.png" alt="DialMCP" width="360">
 </p>
 
 <h1 align="center">DialMCP Connector</h1>
@@ -158,6 +158,18 @@ Full detail: <https://dialmcp.com/safety.html>
 - Terms — <https://dialmcp.com/terms>
 - Do-not-call opt-out — <https://mcp.dialmcp.com/opt-out>
 - Support — <support@dialmcp.com>
+
+## Releasing
+
+Publishing to npm is automated. To cut a release:
+
+1. Bump `version` in **both** `package.json` and `server.json` (CI fails if they disagree).
+2. Merge to `main`.
+3. Publish a GitHub Release tagged `vX.Y.Z` — the tag must match `package.json` or the workflow stops.
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) then typechecks, builds, smoke-tests, and
+runs `npm publish --provenance`, so every release carries a signed link back to the commit and workflow
+that built it. Use the workflow's `workflow_dispatch` trigger for a dry run.
 
 ## Contributing
 
