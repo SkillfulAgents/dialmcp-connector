@@ -142,7 +142,7 @@ Every protection is enforced **server-side**, not as model instructions the agen
 - **Prohibited uses.** Telemarketing, cold outreach, robocalling, surveys, lead generation, debt
   collection, and political outreach are barred by the [Terms](https://dialmcp.com/terms).
 
-Full detail: <https://dialmcp.com/safety.html>
+Full detail: <https://dialmcp.com/safety>
 
 ## Requirements
 
@@ -153,7 +153,7 @@ Full detail: <https://dialmcp.com/safety.html>
 ## Links
 
 - Website — <https://dialmcp.com>
-- Safety and anti-spam — <https://dialmcp.com/safety.html>
+- Safety and anti-spam — <https://dialmcp.com/safety>
 - Privacy — <https://dialmcp.com/privacy>
 - Terms — <https://dialmcp.com/terms>
 - Do-not-call opt-out — <https://mcp.dialmcp.com/opt-out>
@@ -217,3 +217,4 @@ reporting anything security-related.
 ## License
 
 MIT © Datawizz Inc. See [LICENSE](LICENSE).
+
